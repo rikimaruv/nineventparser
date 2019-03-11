@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>YAN Vk Group Member Filter</title>
+<style>
+.hidden {
+	display: none;
+}
+body {
+	color: #000;
+	font-size: 13px;
+	font-family: -apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;
+	line-height: 1.154;
+	font-weight: 400;
+}
+input[type='button'] {
+	color: white;
+	padding: 7px 16px 8px;
+	border: none;
+	background-color:#5181b8;
+	border-radius: 4px;
+	cursor:pointer;
+	font-size:12.5px;
+	font-family:-apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;
+	line-height:15px;
+	text-align:center;
+	text-decoration:none;
+}
+input[type='button']:hover {
+	background-color:#5b88bd;
+}
+
+input[type='checkbox'] {
+	position: absolute;
+	z-index: -1;
+	opacity: 0;
+	margin: 10px 0 0 20px;
+}
+input[type='checkbox'] + label {
+	position: relative;
+	padding: 0 0 0 32px;
+	cursor: pointer;
+}
+input[type='checkbox'] + label:before {
+	content: '';
+	position: absolute;
+	top: -4px;
+	left: 0;
+	width: 26px;
+	height: 26px;
+	border-radius: 4px;
+	background-color: #e5ebf1;
+}
+input[type='checkbox'] + label:after {
+	content: '';
+	position: absolute;
+	top: -2px;
+	left: 2px;
+	width: 26px;
+	height: 26px;
+}
+input[type='checkbox']:checked + label:before {
+	background-color: #5181b8;
+}
+input[type='checkbox']:checked + label:after {
+	left: 9px;
+	top: 2px;
+	width: 5px;
+	height: 10px;
+	border: solid white;
+	border-width: 0 3px 3px 0;
+	transform: rotate(45deg);
+}
+input[type='checkbox']:focus + label:before {
+}
+
+input[type='text'] {
+    border: 1px solid #224b7a;
+    box-sizing: border-box;
+    padding: 6px;
+    height: 28px;
+    line-height: 16px;
+    border-radius: 14px;
+}
+
+input[type='text']:focus {
+	background-color:#fff;
+	color:#000
+}
+</style>
+<script type="text/javascript">
+// код некрасивый, быстро писалось :)
+
+paidUserId = new Set();
+groupId = 0;
+paySum = 250;
+items = [];
+date = new Date();
+var translitMap = new Map();
+
+function init() {
+	let rusArray = ['а', 'б', 'в', 'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю', 'я'];
+	let engArray = ['a', 'b', 'v', 'g', 'd', 'e', 'e', 'zh', 'z', 'i', 'y', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'f', 'h', 'ts', 'ch', 'sh', 'sch', '', 'y', '', 'e', 'yu', 'ya'];
+	
+	for (let i = 0; i < rusArray.length; i++) {
+		translitMap.set(rusArray[i], engArray[i]);
+	}
+}
+
+function translit(string) {
+	var trString = "";
+	for (var i = 0; i < string.length; i++) {
+		let origChar = string.charAt(i);
+		let engChar = translitMap.get(origChar);
+		if(typeof engChar != 'undefined') {
+			trString += engChar;
+		}
+		else {
+			trString += origChar;
+		}
+	}
+	return trString;
+}
+
+function getById(id) {
+	return document.getElementById(id);
+}
+
+var docCookies = {
+  getItem: function (sKey) {
+    if (!sKey) { return null; }
+    return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1")) || null;
+  },
+  setItem: function (sKey, sValue, vEnd, sPath, sDomain, bSecure) {
+    if (!sKey || /^(?:expires|max\-age|path|domain|secure)$/i.test(sKey)) { return false; }
+    var sExpires = "";
+    if (vEnd) {
+      switch (vEnd.constructor) {
+        case Number:
+          sExpires = vEnd === Infinity ? "; expires=Fri, 31 Dec 9999 23:59:59 GMT" : "; max-age=" + vEnd;
+          break;
+        case String:
+          sExpires = "; expires=" + vEnd;
+          break;
+        case Date:
+          sExpires = "; expires=" + vEnd.toUTCString();
+          break;
+      }
+    }
+    document.cookie = encodeURIComponent(sKey) + "=" + encodeURIComponent(sValue) + sExpires + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "") + (bSecure ? "; secure" : "");
+    return true;
+  },
+  removeItem: function (sKey, sPath, sDomain) {
+    if (!this.hasItem(sKey)) { return false; }
+    document.cookie = encodeURIComponent(sKey) + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT" + (sDomain ? "; domain=" + sDomain : "") + (sPath ? "; path=" + sPath : "");
+    return true;
+  },
+  hasItem: function (sKey) {
+    if (!sKey || /^(?:expires|max\-age|path|domain|secure)$/i.test(sKey)) { return false; }
+    return (new RegExp("(?:^|;\\s*)" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=")).test(document.cookie);
+  },
+  keys: function () {
+    var aKeys = document.cookie.replace(/((?:^|\s*;)[^\=]+)(?=;|$)|^\s*|\s*(?:\=[^;]*)?(?:\1|$)/g, "").split(/\s*(?:\=[^;]*)?;\s*/);
+    for (var nLen = aKeys.length, nIdx = 0; nIdx < nLen; nIdx++) { aKeys[nIdx] = decodeURIComponent(aKeys[nIdx]); }
+    return aKeys;
+  }
+};
+
+function loadCookie() {
+	console.log("loadCookie");
+	console.log(document.cookie);
+	cookieGroupId = parseInt(docCookies.getItem("groupId"));
+	if(cookieGroupId != null) {
+		groupId = cookieGroupId;
+	}
+	
+	paidUserId.clear();
+	let paidUserIdList = docCookies.getItem("paidUserId");
+	if(paidUserIdList) {
+		paidUserIdList.split(',').forEach(function(element) {
+			paidUserId.add(parseInt(element));
+		});
+	}
+}
+
+function parseMembers(data) {
+	//console.log('parseMembers');
+	//console.log(data);
+	if(typeof data.response == "undefined") {
+		return;
+	}
+	
+	items = data.response.items;
+	getById("groupCurrentUserCount").innerHTML = data.response.count;
+	
+	checkUsersLeft();
+	calcTotalSum();
+	createTable();
+}
+
+function parseGroup(data) {
+	//console.log('parseGroup');
+	//console.log(data);
+	if(typeof data.response == "undefined") {
+		return;
+	}
+	let date = new Date(data.response[0].start_date * 1000);
+	getById("eventDate").innerHTML = date.toLocaleDateString();
+}
+
+function loadJsonp(link) {
+	//console.log('loadJsonp');
+	//console.log(groupId);
+	script = document.createElement('script');
+	script.setAttribute('src', link.replace('{GROUPID}', groupId));
+	document.head.appendChild(script);
+	return script;
+}
+
+function loadData() {
+	if(typeof getMembersScript !== 'undefined') {
+		getMembersScript.parentNode.removeChild(getMembersScript);
+	}
+	if(typeof getGroupScript !== 'undefined') {
+		getGroupScript.parentNode.removeChild(getGroupScript);
+	}
+	getMembersScript = loadJsonp('https://api.vk.com/method/groups.getMembers?group_id={GROUPID}&fields=lists,photo_100,description&access_token=89f88fdc89f88fdc89f88fdc5389919354889f889f88fdcd587290f922134e53730e245&v=5.92&lang=ru&callback=parseMembers' + '&randomGarbage=' + Math.random());
+	getGroupScript = loadJsonp('https://api.vk.com/method/groups.getById?group_id={GROUPID}&fields=start_date&access_token=89f88fdc89f88fdc89f88fdc5389919354889f889f88fdcd587290f922134e53730e245&v=5.92&lang=ru&callback=parseGroup' + '&randomGarbage=' + Math.random());
+}
+
+function load() {
+  	loadCookie();
+	loadData();
+}
+
+function setGroupId() {
+	console.log("setGroupId");
+	
+	let groupIdText = getById("groupIdText").value;
+	let index = groupIdText.search("\\d");
+	let newGroupId = parseInt(groupIdText.substr(index));
+	
+	if(newGroupId == groupId) {
+		return;
+	}
+	
+	var date = new Date;
+	date.setDate(date.getDate() + 10);
+	
+	docCookies.removeItem("paidUserId");
+	groupId = newGroupId;
+	docCookies.setItem("groupId", groupId, date);
+	
+	console.log(document.cookie);
+	
+	load();
+}
+
+function calcTotalSum() {
+	getById("totalSum").innerHTML = paidUserId.size * paySum;
+	getById("totalPaid").innerHTML = paidUserId.size;
+}
+
+function savePaidUserId() {
+	calcTotalSum();
+	
+	var date = new Date;
+	date.setDate(date.getDate() + 10);
+	docCookies.setItem("paidUserId", Array.from(paidUserId).join(','), date);
+}
+
+function toggleUser(checkbox) {
+	let id = parseInt(checkbox.id.replace('check', ''));
+	if(checkbox.checked) {
+		paidUserId.add(id);
+	}
+	else {
+		paidUserId.delete(id);
+	}
+	savePaidUserId();
+}
+
+function createTable() {
+	let showOnlyPaid = getById("paidOnlyCheckBox").checked;
+	let filterInput = getById("filterInput").value.toLowerCase().replace('ё', 'е');
+	var table = "<table id='dataTable'>";
+	for(var i = 0; i < items.length; i++) {
+		var firstName = items[i].first_name;
+		let lastName = items[i].last_name;
+		let id = parseInt(items[i].id);
+		var style = "";
+		if(id == 120743) {
+			style = " style='color: #FF69B4;' "
+		}
+		if(id == 2563422) {
+			firstName += " 👑";
+		}
+		var checked = "";
+		let paid = paidUserId.has(id);
+		if(paid) {
+			checked = " checked ";
+		}
+		table += "<tr>"
+				+ "<td><input class='isUserPaidCheckbox' type=checkbox style='width: 32px; height:32px;' id=check" + id + " " + checked + " onclick='toggleUser(this);' />"
+				+ "<label for='check" + id + "'></label></td>"
+				+ "<td><img style='border-radius: 25px;' width=50 height=50 src='" + items[i].photo_100 + "' /></td>"
+				+ "<td class='firstName' " + style + ">" + firstName + "</td>"
+				+ "<td class='lastName' " + style + ">" + lastName + "</td>"
+				+ "</tr>";
+	}
+	table += "</table>";
+	getById("data").innerHTML = table;
+	
+	filterTable();
+}
+
+function filterTable() {
+	let showOnlyPaid = getById("paidOnlyCheckBox").checked;
+	let filterInput = getById("filterInput").value.toLowerCase().replace('ё', 'е');
+	let rows = getById('dataTable').getElementsByTagName('tr');
+	var filterInputTranslit;
+	//if(filterInput.length > 0 && typeof translitMap.get(filterInput.charAt(0)) == 'undefined') {
+	if(filterInput.length > 0 && filterInput.charAt(0) == '[') {
+		filterInputTranslit = ".^"; //reject all
+	}
+	else {
+		filterInputTranslit = translit(filterInput);
+	}
+
+	Array.prototype.forEach.call(rows, function(row) {
+		let paid 		= row.getElementsByClassName('isUserPaidCheckbox')[0].checked;
+		let firstName 	= row.getElementsByClassName('firstName')[0].innerHTML.toLowerCase().replace('ё', 'е');
+		let lastName 	= row.getElementsByClassName('lastName')[0].innerHTML.toLowerCase().replace('ё', 'е');
+		let firstNameTranslit 	= translit(firstName);
+		let lastNameTranslit 	= translit(lastName);
+		
+		if(!((lastName.search(filterInput) == 0  || firstName.search(filterInput) == 0 || lastNameTranslit.search(filterInputTranslit) == 0  || firstNameTranslit.search(filterInputTranslit) == 0)
+			&& (!showOnlyPaid || (showOnlyPaid && paid))))
+		{
+			row.classList.add("hidden");
+		}
+		else {
+			row.classList.remove("hidden");
+		}
+	});
+}
+
+function checkUsersLeft() {
+	var usersLeft = new Set(paidUserId);
+	for(var i = 0; i < items.length; i++) {
+		usersLeft.delete(parseInt(items[i].id));
+	}
+	getById("usersLeft").innerHTML = Array.from(usersLeft).join(', ');
+	console.log(usersLeft);
+	if(usersLeft.size > 0) {
+		getById("groupLeftUserCount").innerHTML = " + " + usersLeft.size;
+	}
+}
+
+function filterRus() {
+	getById("filterInput").value = "[^А-я]";
+	filterTable();
+}
+
+function filterClear() {
+	getById("filterInput").value = "";
+	filterTable();
+}
+
+function sortAbc() {
+	items.sort((a,b) => (a.last_name > b.last_name) ? 1 : ((b.last_name > a.last_name) ? -1 : 0));
+	createTable();
+}
+
+function download(data, filename, type) {
+    var file = new Blob([data], {type: type});
+    if (window.navigator.msSaveOrOpenBlob) // IE10+
+        window.navigator.msSaveOrOpenBlob(file, filename);
+    else { // Others
+        var a = document.createElement("a"),
+                url = URL.createObjectURL(file);
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);  
+        }, 0); 
+    }
+}
+
+function saveData() {
+	createTable();
+	var template = "<!DOCTYPE html><html lang='ru'><head><meta charset='UTF-8'><title>YAN Vk Group Member Filter</title><body>{DATA}</body></html>";
+	download(template.replace('{DATA}', getById('pageData').innerHTML), "сходка_" + getById('eventDate').innerHTML + ".html", 'text/html');
+}
+</script>
+</head>
+<body>
+  <table><tr>
+	 <td><input type=button value="Обновить" onclick="loadData()" /></td>
+	 <td><input type=button value="Сортировать" onclick="sortAbc()" /></td>
+	 <td><input type=checkbox id="paidOnlyCheckBox" onclick="filterTable()" /><label for="paidOnlyCheckBox">Оплаченные</label></td>
+  </tr></table>
+  <hr style="border: none; border-top: 1px solid #e7e8ec;" />
+  <table><tr>
+	 <td><input id="filterInput" autofocus type="text" size="16" onkeyup="filterTable()" /></td>
+	 <td><input value="Не рус." id="filterRusInput" type="button" onclick="filterRus()" /></td>
+	 <td><input value="Очистить" id="filterClearInput" type="button" onclick="filterClear()" /></td>
+  </tr></table>
+  <div id='pageData'>
+  <table>
+  <tr><td>Выплачено:</td><td><span id="totalSum">0</span> руб. <span id="totalPaid">0</span> чел.; <span id="groupCurrentUserCount"></span> <span id="groupLeftUserCount"></span> чел.</td></tr>
+  </table>
+  <div id="data"></div>
+  <div>Вышедшие пользователи: <span id="usersLeft"></span></div>
+  <div>Дата мероприятия: <span id="eventDate"></span></div>
+  </div>
+  <input type=button value="Сохранить отчет" onclick="saveData()" />
+  <table><tr>
+	 <td><input id="groupIdText" type="text" size="16" onclick="this.select();" /></td>
+	 <td><input value="Задать id мероприятия" id="filterRusInput" type="button" onclick="setGroupId()" /></td>
+  </tr></table>
+  <script>
+	init();
+	load();
+	document.getElementById("filterInput").focus();
+  </script>
+</body>
+</html>
