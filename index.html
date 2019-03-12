@@ -395,7 +395,7 @@ function download(data, filename, type) {
 
 function saveData() {
 	createTable();
-	var template = "<!DOCTYPE html><html lang='ru'><head><meta charset='UTF-8'><title>YAN Vk Group Member Filter</title><body>{DATA}</body></html>";
+	var template = "<!DOCTYPE html><html lang='ru'><head><meta charset='UTF-8'><title>YAN Vk Group Member Filter</title><meta name='viewport' content='width=device-width, initial-scale=1'><style>body {color: #000;font-size: 13px;font-family: -apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;line-height: 1.154;font-weight: 400;}</style></head><body>{DATA}</body></html>";
 	download(template.replace('{DATA}', getById('pageData').innerHTML), "сходка_" + getById('eventDate').innerHTML + ".html", 'text/html');
 }
 </script>
