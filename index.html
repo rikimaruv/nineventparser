@@ -99,7 +99,7 @@ groupId = 0;
 paySum = 250;
 items = [];
 date = new Date();
-var translitMap = new Map();
+let translitMap = new Map();
 
 function init() {
 	let rusArray = ['а', 'б', 'в', 'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю', 'я'];
@@ -111,8 +111,8 @@ function init() {
 }
 
 function translit(string) {
-	var trString = "";
-	for (var i = 0; i < string.length; i++) {
+	let trString = "";
+	for (let i = 0; i < string.length; i++) {
 		let origChar = string.charAt(i);
 		let engChar = translitMap.get(origChar);
 		if(typeof engChar != 'undefined') {
@@ -129,14 +129,14 @@ function getById(id) {
 	return document.getElementById(id);
 }
 
-var docCookies = {
+let docCookies = {
   getItem: function (sKey) {
     if (!sKey) { return null; }
     return decodeURIComponent(document.cookie.replace(new RegExp("(?:(?:^|.*;)\\s*" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=\\s*([^;]*).*$)|^.*$"), "$1")) || null;
   },
   setItem: function (sKey, sValue, vEnd, sPath, sDomain, bSecure) {
     if (!sKey || /^(?:expires|max\-age|path|domain|secure)$/i.test(sKey)) { return false; }
-    var sExpires = "";
+    let sExpires = "";
     if (vEnd) {
       switch (vEnd.constructor) {
         case Number:
@@ -163,8 +163,8 @@ var docCookies = {
     return (new RegExp("(?:^|;\\s*)" + encodeURIComponent(sKey).replace(/[\-\.\+\*]/g, "\\$&") + "\\s*\\=")).test(document.cookie);
   },
   keys: function () {
-    var aKeys = document.cookie.replace(/((?:^|\s*;)[^\=]+)(?=;|$)|^\s*|\s*(?:\=[^;]*)?(?:\1|$)/g, "").split(/\s*(?:\=[^;]*)?;\s*/);
-    for (var nLen = aKeys.length, nIdx = 0; nIdx < nLen; nIdx++) { aKeys[nIdx] = decodeURIComponent(aKeys[nIdx]); }
+    let aKeys = document.cookie.replace(/((?:^|\s*;)[^\=]+)(?=;|$)|^\s*|\s*(?:\=[^;]*)?(?:\1|$)/g, "").split(/\s*(?:\=[^;]*)?;\s*/);
+    for (let nLen = aKeys.length, nIdx = 0; nIdx < nLen; nIdx++) { aKeys[nIdx] = decodeURIComponent(aKeys[nIdx]); }
     return aKeys;
   }
 };
@@ -247,7 +247,7 @@ function setGroupId() {
 		return;
 	}
 	
-	var date = new Date;
+	let date = new Date;
 	date.setDate(date.getDate() + 10);
 	
 	docCookies.removeItem("paidUserId");
@@ -267,7 +267,7 @@ function calcTotalSum() {
 function savePaidUserId() {
 	calcTotalSum();
 	
-	var date = new Date;
+	let date = new Date;
 	date.setDate(date.getDate() + 10);
 	docCookies.setItem("paidUserId", Array.from(paidUserId).join(','), date);
 }
@@ -286,19 +286,19 @@ function toggleUser(checkbox) {
 function createTable() {
 	let showOnlyPaid = getById("paidOnlyCheckBox").checked;
 	let filterInput = getById("filterInput").value.toLowerCase().replace('ё', 'е');
-	var table = "<table id='dataTable'>";
-	for(var i = 0; i < items.length; i++) {
-		var firstName = items[i].first_name;
+	let table = "<table id='dataTable'>";
+	for(let i = 0; i < items.length; i++) {
+		let firstName = items[i].first_name;
 		let lastName = items[i].last_name;
 		let id = parseInt(items[i].id);
-		var style = "";
+		let style = "";
 		if(id == 120743) {
 			style = " style='color: #FF69B4;' "
 		}
 		if(id == 2563422) {
-			firstName += " 👑";
+			firstName += " 💮";
 		}
-		var checked = "";
+		let checked = "";
 		let paid = paidUserId.has(id);
 		if(paid) {
 			checked = " checked ";
@@ -321,7 +321,7 @@ function filterTable() {
 	let showOnlyPaid = getById("paidOnlyCheckBox").checked;
 	let filterInput = getById("filterInput").value.toLowerCase().replace('ё', 'е');
 	let rows = getById('dataTable').getElementsByTagName('tr');
-	var filterInputTranslit;
+	let filterInputTranslit;
 	//if(filterInput.length > 0 && typeof translitMap.get(filterInput.charAt(0)) == 'undefined') {
 	if(filterInput.length > 0 && filterInput.charAt(0) == '[') {
 		filterInputTranslit = ".^"; //reject all
@@ -349,8 +349,8 @@ function filterTable() {
 }
 
 function checkUsersLeft() {
-	var usersLeft = new Set(paidUserId);
-	for(var i = 0; i < items.length; i++) {
+	let usersLeft = new Set(paidUserId);
+	for(let i = 0; i < items.length; i++) {
 		usersLeft.delete(parseInt(items[i].id));
 	}
 	getById("usersLeft").innerHTML = Array.from(usersLeft).join(', ');
@@ -376,11 +376,11 @@ function sortAbc() {
 }
 
 function download(data, filename, type) {
-    var file = new Blob([data], {type: type});
+    let file = new Blob([data], {type: type});
     if (window.navigator.msSaveOrOpenBlob) // IE10+
         window.navigator.msSaveOrOpenBlob(file, filename);
     else { // Others
-        var a = document.createElement("a"),
+        let a = document.createElement("a"),
                 url = URL.createObjectURL(file);
         a.href = url;
         a.download = filename;
@@ -395,7 +395,7 @@ function download(data, filename, type) {
 
 function saveData() {
 	createTable();
-	var template = "<!DOCTYPE html><html lang='ru'><head><meta charset='UTF-8'><title>YAN Vk Group Member Filter</title><meta name='viewport' content='width=device-width, initial-scale=1'><style>body {color: #000;font-size: 13px;font-family: -apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;line-height: 1.154;font-weight: 400;}</style></head><body>{DATA}</body></html>";
+	let template = "<!DOCTYPE html><html lang='ru'><head><meta charset='UTF-8'><title>YAN Vk Group Member Filter</title><meta name='viewport' content='width=device-width, initial-scale=1'><style>body {color: #000;font-size: 13px;font-family: -apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;line-height: 1.154;font-weight: 400;}</style></head><body>{DATA}</body></html>";
 	download(template.replace('{DATA}', getById('pageData').innerHTML), "сходка_" + getById('eventDate').innerHTML + ".html", 'text/html');
 }
 </script>
