@@ -6,8 +6,47 @@
 <meta http-equiv="Content-Security-Policy" content="script-src * 'unsafe-inline'; connect-src *">
 <title>YAN Vk Group Member Filter</title>
 <style>
+.item {
+	margin: 2px; 
+	padding: 0;
+	width: 65px;
+	min-height: 70px;
+	text-align:center;
+	overflow: hidden;
+	display: inline-block;
+}
+.isUserPaidCheckbox {
+	margin: 0;
+	padding: 0;
+	position: absolute; 
+	bottom: 0; 
+	right: 0;
+	width:  16px;
+	height: 16px;
+}
+.firstName {
+	display: block;
+}
+.lastName {
+	display: block;
+}
+.avatar {
+    background-size:     cover; 
+    background-repeat:   no-repeat;
+	border-radius: 50%;
+	display: inline-block;
+	width: 50px;
+	height: 50px;
+	position: relative;
+}
 .hidden {
 	display: none;
+}
+.displayInline {
+	display: inline-block;
+}
+.displayBlock {
+	display: block;
 }
 body {
 	color: #000;
@@ -32,7 +71,7 @@ input[type='button'] {
 input[type='button']:hover {
 	background-color:#5b88bd;
 }
-
+/*
 input[type='checkbox'] {
 	position: absolute;
 	z-index: -1;
@@ -76,7 +115,7 @@ input[type='checkbox']:checked + label:after {
 }
 input[type='checkbox']:focus + label:before {
 }
-
+*/
 input[type='text'] {
     border: 1px solid #224b7a;
     box-sizing: border-box;
@@ -90,16 +129,34 @@ input[type='text']:focus {
 	background-color:#fff;
 	color:#000
 }
+.block1 {
+    color: red;
+    width: 50px;
+	    height: 50px;
+    border: 1px solid green;
+	    position: relative;
+}
+
+.block2 {
+    color: blue;
+    width: 32px;
+    border: 2px solid black;
+    position: absolute;
+	bottom:0;
+	right:0;
+}
 </style>
 <script type="text/javascript">
 // код некрасивый, быстро писалось :)
 
-paidUserId = new Set();
-groupId = 0;
-paySum = 250;
-items = [];
-date = new Date();
-let translitMap = new Map();
+var paidUserId = new Set();
+var groupId = 0;
+var paySum = 250;
+var items = [];
+var date = new Date();
+var refreshFilterTimer = 0;
+var translitMap = new Map();
+var updateUsersTimerId = 0;
 
 function init() {
 	let rusArray = ['а', 'б', 'в', 'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю', 'я'];
@@ -187,24 +244,48 @@ function loadCookie() {
 }
 
 function parseMembers(data) {
-	//console.log('parseMembers');
-	//console.log(data);
-	if(typeof data.response == "undefined") {
+	console.log('parseMembers');
+	if(typeof data.response == 'undefined') {
 		return;
 	}
 	
-	items = data.response.items;
+	let oldItems 	= items;
+	let newItems 	= data.response.items;
+	let sortedItems = [];
+	
+	if(oldItems.size == 0) {
+		items = newItems;
+	}
+	else {
+		newItems.forEach(function(item){
+			if(oldItems.indexOf(item) == -1) {
+				sortedItems.push(item);
+			}
+		});
+		oldItems.forEach(function(item){
+			if(newItems.indexOf(item) != -1 
+				&& sortedItems.indexOf(item) == -1) 
+			{
+				sortedItems.push(item);
+			}
+		});
+		
+		items = sortedItems;
+	}
+
 	getById("groupCurrentUserCount").innerHTML = data.response.count;
 	
 	checkUsersLeft();
 	calcTotalSum();
 	createTable();
+	let date = new Date();
+	getById('updateButton').value = 'Обновить (' + date.getHours().toString() + ':' + date.getMinutes().toString().padStart(2, '0') + ')';
 }
 
 function parseGroup(data) {
 	//console.log('parseGroup');
 	//console.log(data);
-	if(typeof data.response == "undefined") {
+	if(typeof data.response == 'undefined') {
 		return;
 	}
 	let date = new Date(data.response[0].start_date * 1000);
@@ -212,8 +293,8 @@ function parseGroup(data) {
 }
 
 function loadJsonp(link) {
-	//console.log('loadJsonp');
-	//console.log(groupId);
+	console.log('loadJsonp');
+	console.log(groupId);
 	script = document.createElement('script');
 	script.setAttribute('src', link.replace('{GROUPID}', groupId));
 	document.head.appendChild(script);
@@ -234,6 +315,7 @@ function loadData() {
 function load() {
   	loadCookie();
 	loadData();
+	toggleAutoUpdate(getById('updateTimerCheckBox').checked);
 }
 
 function setGroupId() {
@@ -242,15 +324,14 @@ function setGroupId() {
 	let groupIdText = getById("groupIdText").value;
 	let index = groupIdText.search("\\d");
 	let newGroupId = parseInt(groupIdText.substr(index));
-	
+
 	if(newGroupId == groupId) {
 		return;
 	}
 	
+	docCookies.removeItem("paidUserId");
 	let date = new Date;
 	date.setDate(date.getDate() + 10);
-	
-	docCookies.removeItem("paidUserId");
 	groupId = newGroupId;
 	docCookies.setItem("groupId", groupId, date);
 	
@@ -281,12 +362,13 @@ function toggleUser(checkbox) {
 		paidUserId.delete(id);
 	}
 	savePaidUserId();
+	
+	clearTimeout(refreshFilterTimer);
+	refreshFilterTimer = setTimeout(filterTable, 10000);
 }
 
 function createTable() {
-	let showOnlyPaid = getById("paidOnlyCheckBox").checked;
-	let filterInput = getById("filterInput").value.toLowerCase().replace('ё', 'е');
-	let table = "<table id='dataTable'>";
+	let data = "<div id='dataTable'>";
 	for(let i = 0; i < items.length; i++) {
 		let firstName = items[i].first_name;
 		let lastName = items[i].last_name;
@@ -303,24 +385,29 @@ function createTable() {
 		if(paid) {
 			checked = " checked ";
 		}
-		table += "<tr>"
-				+ "<td><input class='isUserPaidCheckbox' type=checkbox style='width: 32px; height:32px;' id=check" + id + " " + checked + " onclick='toggleUser(this);' />"
-				+ "<label for='check" + id + "'></label></td>"
-				+ "<td><img style='border-radius: 25px;' width=50 height=50 src='" + items[i].photo_100 + "' /></td>"
-				+ "<td class='firstName' " + style + ">" + firstName + "</td>"
-				+ "<td class='lastName' " + style + ">" + lastName + "</td>"
-				+ "</tr>";
+				
+		data += "<span class='item'>"
+				+ "<div class='avatar' style='background-image:url(" + items[i].photo_100 +");'><input class='isUserPaidCheckbox' type=checkbox id=check" + id + " " + checked + " onclick='toggleUser(this);' >"
+				//<label for='check" + id + "'></label>"
+				//+ "<img style='border-radius: 25px;' width=50 height=50 src='" + items[i].photo_100 + "' />"
+				+ "</div>"
+				+ " <span class='firstName' " + style + ">" + firstName + "</span>"
+				+ " <span class='lastName' " + style + ">" + lastName + "</span>"
+				+ "</span>";
 	}
-	table += "</table>";
-	getById("data").innerHTML = table;
+	data += "</div>";
+	getById("data").innerHTML = data;
 	
 	filterTable();
 }
 
 function filterTable() {
-	let showOnlyPaid = getById("paidOnlyCheckBox").checked;
+	clearTimeout(refreshFilterTimer);
+
+	let showPaid = getById("showPaidCheckBox").checked;
+	let showUnpaid = getById("showUnpaidCheckBox").checked;
 	let filterInput = getById("filterInput").value.toLowerCase().replace('ё', 'е');
-	let rows = getById('dataTable').getElementsByTagName('tr');
+	let rows = getById('dataTable').getElementsByClassName('item');
 	let filterInputTranslit;
 	//if(filterInput.length > 0 && typeof translitMap.get(filterInput.charAt(0)) == 'undefined') {
 	if(filterInput.length > 0 && filterInput.charAt(0) == '[') {
@@ -331,19 +418,38 @@ function filterTable() {
 	}
 
 	Array.prototype.forEach.call(rows, function(row) {
-		let paid 		= row.getElementsByClassName('isUserPaidCheckbox')[0].checked;
-		let firstName 	= row.getElementsByClassName('firstName')[0].innerHTML.toLowerCase().replace('ё', 'е');
-		let lastName 	= row.getElementsByClassName('lastName')[0].innerHTML.toLowerCase().replace('ё', 'е');
-		let firstNameTranslit 	= translit(firstName);
-		let lastNameTranslit 	= translit(lastName);
+		let paid 				= row.getElementsByClassName('isUserPaidCheckbox')[0].checked;
+		let firstName 			= row.getElementsByClassName('firstName')[0];
+		let lastName 			= row.getElementsByClassName('lastName')[0];
+		let firstNameStr 		= firstName.innerHTML.toLowerCase().replace('ё', 'е');
+		let lastNameStr 		= lastName.innerHTML.toLowerCase().replace('ё', 'е');
+		let firstNameTranslit 	= translit(firstNameStr);
+		let lastNameTranslit 	= translit(lastNameStr);
 		
-		if(!((lastName.search(filterInput) == 0  || firstName.search(filterInput) == 0 || lastNameTranslit.search(filterInputTranslit) == 0  || firstNameTranslit.search(filterInputTranslit) == 0)
-			&& (!showOnlyPaid || (showOnlyPaid && paid))))
-		{
-			row.classList.add("hidden");
+		let isFilterFound;
+		if(filterInput.length == 0) {
+			isFilterFound = true;
 		}
 		else {
+			isFilterFound = lastNameStr.search(filterInput) == 0
+							|| firstNameStr.search(filterInput) == 0 
+							|| lastNameTranslit.search(filterInputTranslit) == 0  
+							|| firstNameTranslit.search(filterInputTranslit) == 0;
+		}
+		
+		if(isFilterFound
+			&& ((showPaid && paid) || (showUnpaid && !paid)))
+		{
 			row.classList.remove("hidden");
+			if(filterInput.length == 0) {
+				lastName.classList.add("hidden");
+			}
+			else {
+				lastName.classList.remove("hidden");
+			}
+		}
+		else {
+			row.classList.add("hidden");
 		}
 	});
 }
@@ -395,22 +501,30 @@ function download(data, filename, type) {
 
 function saveData() {
 	createTable();
-	let template = "<!DOCTYPE html><html lang='ru'><head><meta charset='UTF-8'><title>YAN Vk Group Member Filter</title><meta name='viewport' content='width=device-width, initial-scale=1'><style>body {color: #000;font-size: 13px;font-family: -apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;line-height: 1.154;font-weight: 400;}</style></head><body>{DATA}</body></html>";
+	let template = "<!DOCTYPE html><html lang='ru'><head><meta charset='UTF-8'><title>YAN Vk Group Member Filter</title><meta name='viewport' content='width=device-width, initial-scale=1'><style>body {color: #000;font-size: 13px;font-family: -apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;line-height: 1.154;font-weight: 400;} .item {display:block;} .avatar {background-size:cover; background-repeat:no-repeat;border-radius: 50%;display: inline-block;width: 50px;height: 50px;}</style></head><body>{DATA}</body></html>";
 	download(template.replace('{DATA}', getById('pageData').innerHTML), "сходка_" + getById('eventDate').innerHTML + ".html", 'text/html');
+}
+
+function toggleAutoUpdate(autoUpdate) {
+	clearInterval(updateUsersTimerId);
+	if(autoUpdate) {
+		updateUsersTimerId = setInterval(loadData, 1000 * 60 * 5);
+	}
 }
 </script>
 </head>
 <body>
   <table><tr>
-	 <td><input type=button value="Обновить" onclick="loadData()" /></td>
-	 <td><input type=button value="Сортировать" onclick="sortAbc()" /></td>
-	 <td><input type=checkbox id="paidOnlyCheckBox" onclick="filterTable()" /><label for="paidOnlyCheckBox">Оплаченные</label></td>
+	 <td><input id='updateButton' type=button value="Обновить" onclick="loadData()"></td>
+	 <td style='display:none;'><input type=button value="Сортировать" onclick="sortAbc()"></td>
+	 <td><input type=checkbox id="showPaidCheckBox" onclick="filterTable()" ><label for="showPaidCheckBox">Опл.</label></td>
+	 <td><input type=checkbox id="showUnpaidCheckBox" onclick="filterTable()" checked ><label for="showUnpaidCheckBox">Неопл.</label></td>
   </tr></table>
   <hr style="border: none; border-top: 1px solid #e7e8ec;" />
   <table><tr>
-	 <td><input id="filterInput" autofocus type="text" size="16" onkeyup="filterTable()" /></td>
-	 <td><input value="Не рус." id="filterRusInput" type="button" onclick="filterRus()" /></td>
-	 <td><input value="Очистить" id="filterClearInput" type="button" onclick="filterClear()" /></td>
+	 <td><input id="filterInput" type="text" size="16" onkeyup="filterTable()" autofocus ></td>
+	 <td><input value="Не рус." id="filterRusInput" type="button" onclick="filterRus()"></td>
+	 <td><input value="Очистить" id="filterClearInput" type="button" onclick="filterClear()"></td>
   </tr></table>
   <div id='pageData'>
   <table>
@@ -420,11 +534,16 @@ function saveData() {
   <div>Вышедшие пользователи: <span id="usersLeft"></span></div>
   <div>Дата мероприятия: <span id="eventDate"></span></div>
   </div>
-  <input type=button value="Сохранить отчет" onclick="saveData()" />
-  <table><tr>
-	 <td><input id="groupIdText" type="text" size="16" onclick="this.select();" /></td>
-	 <td><input value="Задать id мероприятия" id="filterRusInput" type="button" onclick="setGroupId()" /></td>
-  </tr></table>
+  <input type=button value="Сохранить отчет" onclick="saveData()" >
+  <table>
+  <tr>
+	 <td><input id="groupIdText" type="text" size="16" onclick="this.select();" ></td>
+	 <td><input value="Задать id мероприятия" id="filterRusInput" type="button" onclick="setGroupId()" ></td>
+  </tr>
+  <tr>
+	 <td><input type=checkbox id="updateTimerCheckBox" onclick="toggleAutoUpdate(this.checked)"><label for="updateTimerCheckBox">Автообновление</label></td>
+  </tr>
+  </table>
   <script>
 	init();
 	load();
