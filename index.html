@@ -10,7 +10,7 @@
 	margin: 2px; 
 	padding: 0;
 	width: 65px;
-	min-height: 70px;
+	min-height: 70px;/**/
 	text-align:center;
 	overflow: hidden;
 	display: inline-block;
@@ -57,7 +57,7 @@ body {
 }
 input[type='button'] {
 	color: white;
-	padding: 7px 16px 8px;
+	padding: 8px 8px 8px;
 	border: none;
 	background-color:#5181b8;
 	border-radius: 4px;
@@ -442,9 +442,11 @@ function filterTable() {
 		{
 			row.classList.remove("hidden");
 			if(filterInput.length == 0) {
+				//firstName.classList.add("hidden");
 				lastName.classList.add("hidden");
 			}
 			else {
+				//firstName.classList.remove("hidden");
 				lastName.classList.remove("hidden");
 			}
 		}
@@ -515,10 +517,10 @@ function toggleAutoUpdate(autoUpdate) {
 </head>
 <body>
   <table><tr>
-	 <td><input id='updateButton' type=button value="Обновить" onclick="loadData()"></td>
 	 <td style='display:none;'><input type=button value="Сортировать" onclick="sortAbc()"></td>
 	 <td><input type=checkbox id="showPaidCheckBox" onclick="filterTable()" ><label for="showPaidCheckBox">Опл.</label></td>
 	 <td><input type=checkbox id="showUnpaidCheckBox" onclick="filterTable()" checked ><label for="showUnpaidCheckBox">Неопл.</label></td>
+	 <td><input id='updateButton' type=button value="Обновить" onclick="loadData()"></td>
   </tr></table>
   <hr style="border: none; border-top: 1px solid #e7e8ec;" />
   <table><tr>
@@ -538,7 +540,7 @@ function toggleAutoUpdate(autoUpdate) {
   <table>
   <tr>
 	 <td><input id="groupIdText" type="text" size="16" onclick="this.select();" ></td>
-	 <td><input value="Задать id мероприятия" id="filterRusInput" type="button" onclick="setGroupId()" ></td>
+	 <td><input value="Задать id" id="filterRusInput" type="button" onclick="setGroupId()" ></td>
   </tr>
   <tr>
 	 <td><input type=checkbox id="updateTimerCheckBox" onclick="toggleAutoUpdate(this.checked)"><label for="updateTimerCheckBox">Автообновление</label></td>
