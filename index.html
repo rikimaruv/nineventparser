@@ -253,20 +253,32 @@ function parseMembers(data) {
 	let newItems 	= data.response.items;
 	let sortedItems = [];
 	
+	let oldItemsId 	= new Set();
+	let newItemsId 	= new Set();
+	let sortedItemsId = new Set();
+	oldItems.forEach(function(item){
+		oldItemsId.add(item.id);
+	});
+	newItems.forEach(function(item){
+		newItemsId.add(item.id);
+	});
+	
 	if(oldItems.size == 0) {
 		items = newItems;
 	}
 	else {
 		newItems.forEach(function(item){
-			if(oldItems.indexOf(item) == -1) {
+			if(!oldItemsId.has(item.id)) {
 				sortedItems.push(item);
+				sortedItemsId.add(item.id);
 			}
 		});
 		oldItems.forEach(function(item){
-			if(newItems.indexOf(item) != -1 
-				&& sortedItems.indexOf(item) == -1) 
+			if(newItemsId.has(item.id)
+				&& !sortedItemsId.has(item.id))
 			{
 				sortedItems.push(item);
+				sortedItemsId.add(item.id);
 			}
 		});
 		
@@ -368,7 +380,7 @@ function toggleUser(checkbox) {
 }
 
 function createTable() {
-	let data = "<div id='dataTable'>";
+	let data = "<div>";
 	for(let i = 0; i < items.length; i++) {
 		let firstName = items[i].first_name;
 		let lastName = items[i].last_name;
@@ -396,7 +408,7 @@ function createTable() {
 				+ "</span>";
 	}
 	data += "</div>";
-	getById("data").innerHTML = data;
+	getById('data').innerHTML = data;
 	
 	filterTable();
 }
@@ -407,7 +419,7 @@ function filterTable() {
 	let showPaid = getById("showPaidCheckBox").checked;
 	let showUnpaid = getById("showUnpaidCheckBox").checked;
 	let filterInput = getById("filterInput").value.toLowerCase().replace('ё', 'е');
-	let rows = getById('dataTable').getElementsByClassName('item');
+	let rows = getById('data').getElementsByClassName('item');
 	let filterInputTranslit;
 	//if(filterInput.length > 0 && typeof translitMap.get(filterInput.charAt(0)) == 'undefined') {
 	if(filterInput.length > 0 && filterInput.charAt(0) == '[') {
