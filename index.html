@@ -6,6 +6,13 @@
 <meta http-equiv="Content-Security-Policy" content="script-src * 'unsafe-inline'; connect-src *">
 <title>YAN Vk Group Member Filter</title>
 <style>
+html, body {
+	margin:0;
+	padding:0;	
+}
+#main {
+	padding: 4px;
+}
 #data {
 	max-width: 310px;
 }
@@ -531,6 +538,7 @@ function toggleAutoUpdate(autoUpdate) {
 </script>
 </head>
 <body>
+<div id='main'>
   <table><tr>
 	 <td style='display:none;'><input type=button value="Сортировать" onclick="sortAbc()"></td>
 	 <td><input type=checkbox id="showPaidCheckBox" onclick="filterTable()" ><label for="showPaidCheckBox">Опл.</label></td>
@@ -561,10 +569,11 @@ function toggleAutoUpdate(autoUpdate) {
 	 <td><input type=checkbox id="updateTimerCheckBox" onclick="toggleAutoUpdate(this.checked)"><label for="updateTimerCheckBox">Автообновление</label></td>
   </tr>
   </table>
-  <script>
+</div>
+<script>
 	init();
 	load();
 	document.getElementById("filterInput").focus();
-  </script>
+</script>
 </body>
 </html>
