@@ -546,11 +546,15 @@ function toggleAutoUpdate(autoUpdate) {
 	 <td><input id='updateButton' type=button value="Обновить" onclick="loadData()"></td>
   </tr></table>
   <hr style="border: none; border-top: 1px solid #e7e8ec;" />
-  <table><tr>
+  <div style='position: -webkit-sticky; position: sticky; top: 0; z-index: 10; background-color: white;'>
+  <table>
+  <tr>
 	 <td><input id="filterInput" type="text" size="16" onkeyup="filterTable()" autofocus ></td>
 	 <td><input value="Не рус." id="filterRusInput" type="button" onclick="filterRus()"></td>
 	 <td><input value="Очистить" id="filterClearInput" type="button" onclick="filterClear()"></td>
-  </tr></table>
+  </tr>
+  </table>
+  </div>
   <div id='pageData'>
   <table>
   <tr><td>Выплачено:</td><td><span id="totalSum">0</span> руб. <span id="totalPaid">0</span> чел.; <span id="groupCurrentUserCount"></span> <span id="groupLeftUserCount"></span> чел.</td></tr>
