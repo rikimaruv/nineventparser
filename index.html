@@ -429,9 +429,10 @@ function toggleUser(id) {
 	dialog.classList.add('confirmDialog');
 	dialog.innerHTML = 
 		"<div>"
-		+ userDiv
-		+ "<div style='display: inline-block;'>"
-		+ "<table style='width: 220px;'><tr><td colspan=2 style='padding: 8px;'>"
+		+ "<div>"
+		+ "<table>"
+		+ "<tr><td rowspan=2>" + userDiv + "</td>"
+		+ "<td colspan=2 style='padding: 8px; width: 100%;'>"
 		+ "<input type=number step=10 min=0 max=" + defaultPaySum + " id='paySum" + id + "' value='" + sum + "' onclick='' size=6 style='width: 100%; margin: 0;'>"
 		+ "</td></tr>"
 		+ "<tr>"
@@ -517,8 +518,7 @@ html, body {
 	width: auto;
 }
 #data {
-	width: auto;
-	/*max-width: 330px;*/
+	max-width: 330px;
 }
 #main {
 	padding: 4px;
@@ -535,7 +535,9 @@ html, body {
 	position: fixed;
 	top: 6px;
 	left: 6px;
+	right: 6px;
 	padding: 4px;
+	max-width: 500px;
 	background-color: white;
 	border: 1px solid #5181b8;
 	border-radius: 4px;
