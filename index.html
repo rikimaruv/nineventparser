@@ -431,7 +431,7 @@ function toggleUser(id) {
 		"<div>"
 		+ userDiv
 		+ "<div style='display: inline-block;'>"
-		+ "<table style='width: 176px;'><tr><td colspan=2 style='padding: 8px;'>"
+		+ "<table style='width: 220px;'><tr><td colspan=2 style='padding: 8px;'>"
 		+ "<input type=number step=10 min=0 max=" + defaultPaySum + " id='paySum" + id + "' value='" + sum + "' onclick='' size=6 style='width: 100%; margin: 0;'>"
 		+ "</td></tr><tr>"
 		+ "<tr>"
@@ -441,9 +441,11 @@ function toggleUser(id) {
 		+ "</table>"
 		+ "</div>"
 		+ "<div style='margin-top: 20px;'>"
-		+ "<input type=button style='margin: 4px 8px;' value='Удалить' onclick='processDialog(" + DialogState.remove + "," + id + ")' " + isDeleteDisabled + " >"
-		+ " <input type=button style='margin: 4px 8px;' value='Отмена' onclick='processDialog(" + DialogState.cancel + "," + id + ")' >"
-		+ " <input type=button style='margin: 4px 8px;' value='" + okButtonText + "' onclick='processDialog(" + DialogState.ok + "," + id + ")' >"
+		+ "<table style='width: 100%;'><tr>"
+		+ "<td style='padding: 4px 8px;'><input type=button style='width: 100%;' value='Удалить' onclick='processDialog(" + DialogState.remove + "," + id + ")' " + isDeleteDisabled + " ></td>"
+		+ "<td style='padding: 4px 8px;'><input type=button style='width: 100%;' value='Отмена' onclick='processDialog(" + DialogState.cancel + "," + id + ")' ></td>"
+		+ "<td style='padding: 4px 8px;'><input type=button style='width: 100%;' value='" + okButtonText + "' onclick='processDialog(" + DialogState.ok + "," + id + ")' ></td>"
+		+ "</tr></table>"
 		+ "</div>"
 		+ "</div>";
 	
@@ -514,11 +516,14 @@ html, body {
 	padding:0;
 	width: 100%;
 }
-#main {
-	padding: 4px;
+body {
+	max-width: 330px;
 }
 #data {
-	max-width: 340px;
+	max-width: 330px;
+}
+#main {
+	padding: 4px;
 }
 #curtain {
 	position: fixed;
@@ -530,8 +535,8 @@ html, body {
 }
 .confirmDialog {
 	position: fixed;
-	top: 4px;
-	left: 4px;
+	top: 6px;
+	left: 6px;
 	padding: 4px;
 	background-color: white;
 	border: 1px solid #5181b8;
