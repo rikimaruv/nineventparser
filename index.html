@@ -89,13 +89,13 @@ function loadCookie() {
 	console.log("loadCookie");
 	//console.log(document.cookie);
 	cookieGroupId = parseInt(docCookies.getItem("groupId"));
-	if(cookieGroupId != null) {
+	if(cookieGroupId) {
 		groupId = cookieGroupId;
 	}
 	
 	paidUserId.clear();
 	const paidUserIdList = docCookies.getItem("paidUserId");
-	console.log(paidUserIdList);
+	//console.log(paidUserIdList);
 	if(paidUserIdList) {
 		paidUserIdList.split('_').forEach(function(item) {
 			const pair = item.split('-');	
