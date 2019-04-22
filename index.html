@@ -5,185 +5,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="script-src * 'unsafe-inline'; connect-src *">
 <title>YAN Vk Group Member Filter</title>
-<style>
-html, body {
-	margin:0;
-	padding:0;	
-}
-#main {
-	padding: 4px;
-}
-#data {
-	max-width: 310px;
-}
-#curtain {
-	position: fixed;
-	width: 100%;
-	height: 100%;
-	opacity: 0.85;
-	background-color: black;
-	z-index: 100;
-}
-.item {
-	margin: 2px; 
-	padding: 0;
-	width: 70px;
-	min-height: 70px;
-	text-align: center;
-	overflow: hidden;
-	display: inline-block;
-}
-.isUserPaidCheckbox {
-	margin: 0;
-	padding: 0;
-	position: absolute; 
-	bottom: 0; 
-	right: 0;
-	width:  20px;
-	height: 20px;
-}
-.firstName {
-	display: block;
-}
-.lastName {
-	display: block;
-}
-.avatar {
-    background-size:     cover; 
-    background-repeat:   no-repeat;
-	border-radius: 50%;
-	display: inline-block;
-	width: 50px;
-	height: 50px;
-	position: relative;
-}
-.hidden {
-	display: none;
-}
-.displayInline {
-	display: inline-block;
-}
-.displayBlock {
-	display: block;
-}
-body {
-	color: #000;
-	font-size: 13px;
-	font-family: -apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;
-	line-height: 1.154;
-	font-weight: 400;
-}
-input[type='button'] {
-	color: white;
-	padding: 8px 8px 8px;
-	border: none;
-	background-color:#5181b8;
-	border-radius: 4px;
-	cursor:pointer;
-	font-size:12.5px;
-	font-family:-apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;
-	line-height:15px;
-	text-align:center;
-	text-decoration:none;
-}
-input[type='button']:hover {
-	background-color:#5b88bd;
-}
-/*
-input[type='checkbox'] {
-	position: absolute;
-	z-index: -1;
-	opacity: 0;
-	margin: 10px 0 0 20px;
-}
-input[type='checkbox'] + label {
-	position: relative;
-	padding: 0 0 0 32px;
-	cursor: pointer;
-}
-input[type='checkbox'] + label:before {
-	content: '';
-	position: absolute;
-	top: -4px;
-	left: 0;
-	width: 26px;
-	height: 26px;
-	border-radius: 4px;
-	background-color: #e5ebf1;
-}
-input[type='checkbox'] + label:after {
-	content: '';
-	position: absolute;
-	top: -2px;
-	left: 2px;
-	width: 26px;
-	height: 26px;
-}
-input[type='checkbox']:checked + label:before {
-	background-color: #5181b8;
-}
-input[type='checkbox']:checked + label:after {
-	left: 9px;
-	top: 2px;
-	width: 5px;
-	height: 10px;
-	border: solid white;
-	border-width: 0 3px 3px 0;
-	transform: rotate(45deg);
-}
-input[type='checkbox']:focus + label:before {
-}
-*/
-input[type='text'] {
-    border: 1px solid #224b7a;
-    box-sizing: border-box;
-    padding: 6px;
-    height: 28px;
-    line-height: 16px;
-    border-radius: 14px;
-}
-
-input[type='text']:focus {
-	background-color:#fff;
-	color:#000
-}
-.block1 {
-    color: red;
-    width: 50px;
-	    height: 50px;
-    border: 1px solid green;
-	    position: relative;
-}
-
-.block2 {
-    color: blue;
-    width: 32px;
-    border: 2px solid black;
-    position: absolute;
-	bottom:0;
-	right:0;
-}
-</style>
 <script type="text/javascript">
 // код некрасивый, быстро писалось :)
-
-var paidUserId = new Set();
+const DialogState = {"ok": 1, "delete": 2, "cancel": 3};
+var paidUserId = new Map();
 var groupId = 0;
-var paySum = 250;
+var defaultPaySum = 250;
 var items = [];
 var date = new Date();
 var refreshFilterTimer = 0;
 var translitMap = new Map();
 var updateUsersTimerId = 0;
 
-function init() {
-	let rusArray = ['а', 'б', 'в', 'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю', 'я'];
-	let engArray = ['a', 'b', 'v', 'g', 'd', 'e', 'e', 'zh', 'z', 'i', 'y', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'f', 'h', 'ts', 'ch', 'sh', 'sch', '', 'y', '', 'e', 'yu', 'ya'];
+(function(){
+	const rusArray = ['а', 'б', 'в', 'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю', 'я'];
+	const engArray = ['a', 'b', 'v', 'g', 'd', 'e', 'e', 'zh', 'z', 'i', 'y', 'k', 'l', 'm', 'n', 'o', 'p', 'r', 's', 't', 'u', 'f', 'h', 'ts', 'ch', 'sh', 'sch', '', 'y', '', 'e', 'yu', 'ya'];
 	
 	for (let i = 0; i < rusArray.length; i++) {
 		translitMap.set(rusArray[i], engArray[i]);
 	}
-}
+})();
 
 function translit(string) {
 	let trString = "";
@@ -246,17 +87,25 @@ let docCookies = {
 
 function loadCookie() {
 	console.log("loadCookie");
-	console.log(document.cookie);
+	//console.log(document.cookie);
 	cookieGroupId = parseInt(docCookies.getItem("groupId"));
 	if(cookieGroupId != null) {
 		groupId = cookieGroupId;
 	}
 	
 	paidUserId.clear();
-	let paidUserIdList = docCookies.getItem("paidUserId");
+	const paidUserIdList = docCookies.getItem("paidUserId");
+	console.log(paidUserIdList);
 	if(paidUserIdList) {
-		paidUserIdList.split(',').forEach(function(element) {
-			paidUserId.add(parseInt(element));
+		paidUserIdList.split('_').forEach(function(item) {
+			const pair = item.split('-');	
+			if(pair.length > 0) {
+				const id = parseInt(pair[0]);
+				const sum = pair.length > 1 ? parseInt(pair[1]) : defaultPaySum;
+				if(!isNaN(id) && !isNaN(sum)) {
+					paidUserId.set(id, sum);
+				}
+			}
 		});
 	}
 }
@@ -267,8 +116,8 @@ function parseMembers(data) {
 		return;
 	}
 	
-	let oldItems 	= items;
-	let newItems 	= data.response.items;
+	const oldItems 	= items;
+	const newItems 	= data.response.items;
 	let sortedItems = [];
 	
 	let oldItemsId 	= new Set();
@@ -308,7 +157,7 @@ function parseMembers(data) {
 	checkUsersLeft();
 	calcTotalSum();
 	createTable();
-	let date = new Date();
+	const date = new Date();
 	getById('updateButton').value = 'Обновить (' + date.getHours().toString() + ':' + date.getMinutes().toString().padStart(2, '0') + ')';
 }
 
@@ -318,7 +167,7 @@ function parseGroup(data) {
 	if(typeof data.response == 'undefined') {
 		return;
 	}
-	let date = new Date(data.response[0].start_date * 1000);
+	const date = new Date(data.response[0].start_date * 1000);
 	getById("eventDate").innerHTML = date.toLocaleDateString();
 }
 
@@ -371,8 +220,12 @@ function setGroupId() {
 }
 
 function calcTotalSum() {
-	getById("totalSum").innerHTML = paidUserId.size * paySum;
-	getById("totalPaid").innerHTML = paidUserId.size;
+	var sum = 0;
+	for (const value of paidUserId.values()) {
+		sum += value;
+	}
+	getById('totalSum').innerHTML = sum;
+	getById('totalPaid').innerHTML = paidUserId.size;
 }
 
 function savePaidUserId() {
@@ -380,50 +233,66 @@ function savePaidUserId() {
 	
 	let date = new Date;
 	date.setDate(date.getDate() + 10);
-	docCookies.setItem("paidUserId", Array.from(paidUserId).join(','), date);
+	let paidString = "";
+	for (const [key, value] of paidUserId) {
+		paidString += key + "-" + value + "_";
+	}
+	docCookies.setItem('paidUserId', paidString, date);
 }
 
-function toggleUser(checkbox) {
-	let id = parseInt(checkbox.id.replace('check', ''));
-	if(checkbox.checked) {
-		paidUserId.add(id);
-	}
-	else {
-		paidUserId.delete(id);
-	}
-	savePaidUserId();
+function showCurtain() {
+	getById('curtain').classList.remove('hidden');
+}
+
+function hideCurtain() {
+	getById('curtain').classList.add('hidden');
+}
+
+function genUserHtml(item, addCheckBox) {
+	const id 		= parseInt(item.id);
+	let firstName 	= item.first_name;
+	let lastName 	= item.last_name;
+	let photo 		= item.photo_100;
 	
-	clearTimeout(refreshFilterTimer);
-	refreshFilterTimer = setTimeout(filterTable, 10000);
+	let style = "";
+	if(id == 120743) {
+		style = " style='color: #FF69B4;' ";
+		const mph = [photo];
+		photo = mph[Math.floor(Math.random() * mph.length)];
+		//const fnSuffix = ["🤷‍♀️", "🤦‍♀️", "🧜‍♀️"];
+		//const fnSuffix = ["🤦", "🤷", "🧜‍♀️"];
+		const fnSuffix = [""];
+		firstName += "&nbsp;" + fnSuffix[Math.floor(Math.random() * fnSuffix.length)];
+	}
+	if(id == 2563422) {
+		firstName += "&nbsp;💮";
+	}
+	let checked = "";
+	let paid = paidUserId.has(id);
+	if(paid) {
+		checked = " checked ";
+	}
+	
+	let htmlString = "<span class='item'>"
+						+ "<div class='avatar' style='background-image:url(" + photo +");'>";
+	if(addCheckBox) {
+		htmlString += "<input class='isUserPaidCheckbox' type=checkbox id=check" + id + " " + checked + " onclick='toggleUser(" + id + ");' >";
+		//<label for='check" + id + "'></label>"
+		//+ "<img style='border-radius: 25px;' width=50 height=50 src='" + items[i].photo_100 + "' />"
+	}
+	
+	htmlString += "</div>"
+					+ " <span class='firstName' " + style + ">" + firstName + "</span>"
+					+ " <span class='lastName' " + style + ">" + lastName + "</span>"
+					+ "</span>";
+			
+	return htmlString;
 }
 
 function createTable() {
 	let data = "<div>";
 	for(let i = 0; i < items.length; i++) {
-		let firstName = items[i].first_name;
-		let lastName = items[i].last_name;
-		let id = parseInt(items[i].id);
-		let style = "";
-		if(id == 120743) {
-			style = " style='color: #FF69B4;' "
-		}
-		if(id == 2563422) {
-			firstName += " 💮";
-		}
-		let checked = "";
-		let paid = paidUserId.has(id);
-		if(paid) {
-			checked = " checked ";
-		}
-				
-		data += "<span class='item'>"
-				+ "<div class='avatar' style='background-image:url(" + items[i].photo_100 +");'><input class='isUserPaidCheckbox' type=checkbox id=check" + id + " " + checked + " onclick='toggleUser(this);' >"
-				//<label for='check" + id + "'></label>"
-				//+ "<img style='border-radius: 25px;' width=50 height=50 src='" + items[i].photo_100 + "' />"
-				+ "</div>"
-				+ " <span class='firstName' " + style + ">" + firstName + "</span>"
-				+ " <span class='lastName' " + style + ">" + lastName + "</span>"
-				+ "</span>";
+		data += genUserHtml(items[i], true);
 	}
 	data += "</div>";
 	getById('data').innerHTML = data;
@@ -486,13 +355,108 @@ function filterTable() {
 	});
 }
 
+function processDialog(state, id) {
+	console.log('processDialog ' + id);
+	const sum = parseInt(getById('paySum' + id).value);
+	if(isNaN(sum) || sum < 0) {
+		alert('Неправильная сумма');
+		return;
+	}
+	if(state == DialogState.ok) {
+		console.log('ok');
+		paidUserId.set(id, sum);
+		refreshFilterTimer = setTimeout(filterTable, 10000);
+		savePaidUserId();
+	}
+	else if(state == DialogState.remove) {
+		console.log('remove');
+		paidUserId.delete(id);
+		refreshFilterTimer = setTimeout(filterTable, 10000);
+		savePaidUserId();
+	}
+	else if(state == DialogState.cancel) {
+		console.log('cancel');
+	}
+	
+	let checkBox = getById('check' + id);
+	checkBox.checked = paidUserId.has(id);
+	
+	getById('dialog' + id).remove();
+	hideCurtain();
+}
+
+function incrementPaySum(id) {
+	getById('paySum' + id).stepUp(1);
+	//let input = getById('paySum' + id);
+	//const newValue = parseInt(input.value) + 10;
+	//input.value = newValue > defaultPaySum ? defaultPaySum : 0;
+}
+function decrementPaySum(id) {
+	getById('paySum' + id).stepDown(1);
+	//let input = getById('paySum' + id);
+	//const newValue = parseInt(input.value) - 10;
+	//input.value = newValue > 0 ? newValue : 0;
+}
+
+function toggleUser(id) {
+	clearTimeout(refreshFilterTimer);
+	showCurtain();
+	let userItem = null;
+	for (let item of items) {
+		if(parseInt(item.id) == id) {
+			userItem = item;
+			break;
+		}
+	}
+
+	let userDiv = "";
+	if(!userItem) {
+		alert("userItem is null");
+	}
+	else {
+		userDiv = genUserHtml(userItem, false);
+	}
+	
+	const idExists = paidUserId.has(id);
+	const okButtonText = idExists ? "Изменить" : "Добавить";
+	const isDeleteDisabled = idExists ? "" : "disabled";
+	let sum = defaultPaySum;
+	if(idExists) {
+		sum = paidUserId.get(id);
+	}
+	let dialog = document.createElement('div');
+	dialog.id = 'dialog' + id;
+	dialog.classList.add('confirmDialog');
+	dialog.innerHTML = 
+		"<div>"
+		+ userDiv
+		+ "<div style='display: inline-block;'>"
+		+ "<table><tr><td colspan=2 style='padding: 8px;'>"
+		+ "<input type=number step=10 min=0 max=" + defaultPaySum + " id='paySum" + id + "' value='" + sum + "' onclick='' size=6 style='width: 100%; margin: 0;'>"
+		+ "</td></tr><tr>"
+		+ "<tr>"
+		+ "<td style='padding: 8px;'><input type=button value='&plus;' onclick='incrementPaySum(" + id + ")' style='width: 100%; margin: 0;'></td>"
+		+ "<td style='padding: 8px;'><input type=button value='&minus;' onclick='decrementPaySum(" + id + ")'  style='width: 100%; margin: 0;'></td>"
+		+ "</tr>"
+		+ "</table>"
+		+ "</div>"
+		+ "<div style='margin-top: 20px;'>"
+		+ "<input type=button style='margin: 4px 8px;' value='Удалить' onclick='processDialog(" + DialogState.remove + "," + id + ")' " + isDeleteDisabled + " >"
+		+ " <input type=button style='margin: 4px 8px;' value='Отмена' onclick='processDialog(" + DialogState.cancel + "," + id + ")' >"
+		+ " <input type=button style='margin: 4px 8px;' value='" + okButtonText + "' onclick='processDialog(" + DialogState.ok + "," + id + ")' >"
+		+ "</div>"
+		+ "</div>";
+	
+	getById('dialogPlace').appendChild(dialog);
+}
+
 function checkUsersLeft() {
-	let usersLeft = new Set(paidUserId);
+	let usersLeft = new Map(paidUserId);
 	for(let i = 0; i < items.length; i++) {
 		usersLeft.delete(parseInt(items[i].id));
 	}
 	getById("usersLeft").innerHTML = Array.from(usersLeft).join(', ');
-	console.log(usersLeft);
+	//console.log(usersLeft);
 	if(usersLeft.size > 0) {
 		getById("groupLeftUserCount").innerHTML = " + " + usersLeft.size;
 	}
@@ -544,9 +508,167 @@ function toggleAutoUpdate(autoUpdate) {
 	}
 }
 </script>
+<style>
+html, body {
+	margin:0;
+	padding:0;
+	width: 100%;
+}
+#main {
+	padding: 4px;
+}
+#data {
+	max-width: 340px;
+}
+#curtain {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	opacity: 0.85;
+	background-color: black;
+	z-index: 100;
+}
+.confirmDialog {
+	position: fixed;
+	top: 4px;
+	left: 4px;
+	padding: 4px;
+	background-color: white;
+	border: 1px solid #5181b8;
+	border-radius: 4px;
+	z-index: 200;
+}
+.item {
+	margin: 1px; 
+	padding: 0;
+	width: 78px;
+	min-height: 70px;
+	text-align: center;
+	overflow: hidden;
+	display: inline-block;
+}
+.isUserPaidCheckbox {
+	margin: 0;
+	padding: 0;
+	position: absolute; 
+	bottom: 0; 
+	right: 0;
+	width:  20px;
+	height: 20px;
+}
+.firstName {
+	display: block;
+}
+.lastName {
+	display: block;
+}
+.avatar {
+    background-size:     cover; 
+    background-repeat:   no-repeat;
+	border-radius: 50%;
+	display: inline-block;
+	width: 50px;
+	height: 50px;
+	position: relative;
+}
+.hidden {
+	display: none;
+}
+.displayInline {
+	display: inline-block;
+}
+.displayBlock {
+	display: block;
+}
+body {
+	color: #000;
+	font-size: 13px;
+	font-family: -apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;
+	line-height: 1.154;
+	font-weight: 400;
+}
+input[type='button'] {
+	color: white;
+	padding: 8px 8px 8px;
+	border: none;
+	background-color:#5181b8;
+	border-radius: 4px;
+	cursor:pointer;
+	font-size:12.5px;
+	font-family:-apple-system,BlinkMacSystemFont,Roboto,Helvetica Neue,sans-serif;
+	line-height:15px;
+	text-align:center;
+	text-decoration:none;
+}
+input[type='button']:hover {
+	background-color:#5b88bd;
+}
+input[type='button']:disabled {
+	background-color:#e5ebf1;
+}
+/*
+input[type='checkbox'] {
+	position: absolute;
+	z-index: -1;
+	opacity: 0;
+	margin: 10px 0 0 20px;
+}
+input[type='checkbox'] + label {
+	position: relative;
+	padding: 0 0 0 32px;
+	cursor: pointer;
+}
+input[type='checkbox'] + label:before {
+	content: '';
+	position: absolute;
+	top: -4px;
+	left: 0;
+	width: 26px;
+	height: 26px;
+	border-radius: 4px;
+	background-color: #e5ebf1;
+}
+input[type='checkbox'] + label:after {
+	content: '';
+	position: absolute;
+	top: -2px;
+	left: 2px;
+	width: 26px;
+	height: 26px;
+}
+input[type='checkbox']:checked + label:before {
+	background-color: #5181b8;
+}
+input[type='checkbox']:checked + label:after {
+	left: 9px;
+	top: 2px;
+	width: 5px;
+	height: 10px;
+	border: solid white;
+	border-width: 0 3px 3px 0;
+	transform: rotate(45deg);
+}
+input[type='checkbox']:focus + label:before {
+}
+*/
+input[type='text'] {
+    border: 1px solid #224b7a;
+    box-sizing: border-box;
+    padding: 6px;
+    height: 28px;
+    line-height: 16px;
+    border-radius: 14px;
+}
+
+input[type='text']:focus {
+	background-color:#fff;
+	color:#000
+}
+</style>
 </head>
 <body>
 <div id='curtain' class='hidden'></div>
+<div id='dialogPlace'></div>
 <div id='main'>
   <table><tr>
 	 <td style='display:none;'><input type=button value="Сортировать" onclick="sortAbc()"></td>
@@ -584,9 +706,7 @@ function toggleAutoUpdate(autoUpdate) {
   </table>
 </div>
 <script>
-	init();
 	load();
-	/*document.getElementById("filterInput").focus();*/
 </script>
 </body>
 </html>
