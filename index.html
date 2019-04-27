@@ -694,14 +694,7 @@ input[type='text']:focus {
 <div id='curtain' class='hidden'></div>
 <div id='dialogPlace'></div>
 <div id='main'>
-  <table><tr>
-	 <td style='display:none;'><input type=button value="Сортировать" onclick="sortAbc()"></td>
-	 <td><input type=checkbox id="showPaidCheckBox" onclick="filterTable()" ><label for="showPaidCheckBox">Опл.</label></td>
-	 <td><input type=checkbox id="showUnpaidCheckBox" onclick="filterTable()" checked ><label for="showUnpaidCheckBox">Неопл.</label></td>
-	 <td><input id='updateButton' type=button value="Обновить" onclick="loadData()"></td>
-  </tr></table>
-  <hr style="border: none; border-top: 1px solid #e7e8ec;" />
-  <div style='position: -webkit-sticky; position: sticky; top: 0; z-index: 10; background-color: white;'>
+  <div style='position: fixed; top: 0; left: 0; right: 0; z-index: 10; background-color: white;'>
   <table>
   <tr>
 	 <td><input id="filterInput" type="text" size="16" onkeyup="filterTable()"></td>
@@ -710,6 +703,14 @@ input[type='text']:focus {
   </tr>
   </table>
   </div>
+  <div style='height: 38px;'></div>
+  <table><tr>
+	 <td style='display:none;'><input type=button value="Сортировать" onclick="sortAbc()"></td>
+	 <td><input type=checkbox id="showPaidCheckBox" onclick="filterTable()" ><label for="showPaidCheckBox">Опл.</label></td>
+	 <td><input type=checkbox id="showUnpaidCheckBox" onclick="filterTable()" checked ><label for="showUnpaidCheckBox">Неопл.</label></td>
+	 <td><input id='updateButton' type=button value="Обновить" onclick="loadData()"></td>
+  </tr></table>
+  <hr style="border: none; border-top: 1px solid #e7e8ec;" />
   <div id='pageData'>
   <table>
   <tr><td>Выплачено:</td><td><span id="totalSum">0</span> руб. <span id="totalPaid">0</span> чел.; <span id="groupCurrentUserCount"></span> <span id="groupLeftUserCount"></span> чел.</td></tr>
