@@ -469,10 +469,18 @@ function checkUsersLeft() {
 	for(let i = 0; i < items.length; i++) {
 		usersLeft.delete(parseInt(items[i].id));
 	}
-	getById("usersLeft").innerHTML = Array.from(usersLeft).join(', ');
+
+	let usersLeftString = "";
+	for (var [key, value] of usersLeft) {
+  		usersLeftString += key + ': ' + value + '; ';
+	}
+	getById("usersLeft").innerHTML = usersLeftString;
 	//console.log(usersLeft);
 	if(usersLeft.size > 0) {
 		getById("groupLeftUserCount").innerHTML = " + " + usersLeft.size;
+	}
+	else {
+		getById("groupLeftUserCount").innerHTML = "";
 	}
 }
 
