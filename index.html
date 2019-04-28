@@ -16,6 +16,19 @@ var date = new Date();
 var refreshFilterTimer = 0;
 var translitMap = new Map();
 var updateUsersTimerId = 0;
+var mph = ["bg/bg01.jpg",
+	     "bg/bg02.jpg",
+	     "bg/bg03.jpg",
+	     "bg/bg04.jpg",
+	     "bg/bg05.jpg",
+	     "bg/bg06.jpg",
+	     "bg/bg07.jpg",
+	     "bg/bg08.jpg",
+	     "bg/bg09.jpg",
+	     "bg/bg10.jpg",
+	     "bg/bg11.jpg",
+	     "bg/bga0.jpg",
+	     "bg/bga1.jpg"];
 
 (function(){
 	const rusArray = ['а', 'б', 'в', 'г', 'д', 'е', 'ё', 'ж', 'з', 'и', 'й', 'к', 'л', 'м', 'н', 'о', 'п', 'р', 'с', 'т', 'у', 'ф', 'х', 'ц', 'ч', 'ш', 'щ', 'ъ', 'ы', 'ь', 'э', 'ю', 'я'];
@@ -23,6 +36,13 @@ var updateUsersTimerId = 0;
 	
 	for (let i = 0; i < rusArray.length; i++) {
 		translitMap.set(rusArray[i], engArray[i]);
+	}
+	
+	var images = [];
+	for (let i = 0; i < mph.length; i++) {
+		let image = new Image();
+		image.src = mph[i];
+		images.push(image);
 	}
 })();
 
@@ -257,19 +277,6 @@ function genUserHtml(item, addCheckBox) {
 	let style = "";
 	if(id == 120743) {
 		style = " style='color: #FF69B4;' ";
-		const mph = ["bg/bg01.jpg",
-			     "bg/bg02.jpg",
-			     "bg/bg03.jpg",
-			     "bg/bg04.jpg",
-			     "bg/bg05.jpg",
-			     "bg/bg06.jpg",
-			     "bg/bg07.jpg",
-			     "bg/bg08.jpg",
-			     "bg/bg09.jpg",
-			     "bg/bg10.jpg",
-			     "bg/bg11.jpg",
-			     "bg/bga0.jpg",
-			     "bg/bga1.jpg"];
 		photo = mph[Math.floor(Math.random() * mph.length)];
 		//const fnSuffix = ["<img src='bg/order.png' width=10 height=13>", "🤦", "🤷", "👸", "📖", "🧜‍♀️", "🍑"];
 		const fnSuffix = ["<img src='bg/order.png' width=10 height=13>"];
